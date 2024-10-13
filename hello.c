@@ -1,9 +1,9 @@
-// specification
+#include <stdbool.h>
 #include <stdio.h>
-#include <stdlib.h>
+// specification
 struct Chip8{
 int mem[4096];
-int display[64][32];
+bool display[64][32];
 int pc;
 int index;
 int stack[256];
@@ -38,15 +38,20 @@ for(i=4096;i>0;i--)
 	c->mem[i] = i;
 }
 
+int resetchip(struct Chip8 * c){
+	memtest(c);
+	int i=0;
+	for (i=0;i<=80;i++)
+	{	c->mem[80+i] = font[i];	}
+	c->pc = 0x200;
+	return c->pc;
+}
 int main (){
 	struct Chip8 chip;
 	int i;
-	memtest(&chip);
-	int a =1337; 
-	printf("%d\n", chip.mem[a]);
-	for (i=0;i<=80;i++)
-	{	chip.mem[80+i] = font[i];	}
-	printf("%x", chip.mem[81]);
+	i = resetchip(&chip);
+	if (i==0x200) 
+		printf("reset OK");
 	return 0;
 }
 
