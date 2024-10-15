@@ -1,18 +1,32 @@
+#include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
+
 // specification
 struct Chip8{
-int mem[4096];
+uint8_t mem[4096];
 bool display[64][32];
-int pc;
-int index;
-int stack[256];
-int timer;
-int stimer;
-int registers[16];
+uint16_t pc;
+uint16_t index;
+uint16_t stack[256];
+int sp;
+uint8_t timer;
+uint8_t stimer;
+uint8_t registers[16];
 };
 
-int font[80]=
+struct opcode{
+	int op1;
+	int op2;
+	int op3;
+	int op4;
+	int com1;
+	int com2;
+	unsigned long NNN;
+};
+
+
+uint8_t font[80]=
 {
 0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
 0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -35,23 +49,82 @@ int font[80]=
 void memtest(struct Chip8 * c){
 int i = 4096;
 for(i=4096;i>0;i--)
-	c->mem[i] = i;
+  c->mem[i] = i;
 }
 
-int resetchip(struct Chip8 * c){
-	memtest(c);
-	int i=0;
-	for (i=0;i<=80;i++)
-	{	c->mem[80+i] = font[i];	}
-	c->pc = 0x200;
+uint16_t resetchip(struct Chip8 * c){
+  memtest(c);
+  int i=0;
+  for (i=0;i<=80;i++)
+  { c->mem[80+i] = font[i]; }
+  c->pc = 0x200;
+  return c->pc;
+}
+
+uint16_t Fetch(struct Chip8 * c, struct opcode * o){
+	uint8_t com = c->mem[c->pc];
+	o->op1 =  (com & 11110000) >> 4;
+	o->op2 =  (com & 00001111);
+	o->com1 = com;
+
+	com = c->mem[c->pc+1];
+	o->op3 =  (com & 11110000) >> 4;
+	o->op4 =  (com & 00001111);
+	o->com2 = com;
+	
+	o->NNN = ((op2 << 8) | com2);
+
+	c->pc = c->pc + 2;
 	return c->pc;
 }
-int main (){
-	struct Chip8 chip;
-	int i;
-	i = resetchip(&chip);
-	if (i==0x200) 
-		printf("reset OK");
+
+void set_index(unsigned long a, struct Chip8 * c){
+	c->index = a;
+}
+void set_register(int reg,int value, struct Chip8 * c){
+	c->registers[reg] = value;
+}
+void add_register(int reg,int value, struct Chip8 * c){
+	c->registers[reg] = c->registers[reg]+value;
+}
+void jump(unsigned long adress, struct Chip8 * c){
+	if ((adress > 0x200) and (adress < 0xFFF))
+			c->pc = adress;
+		else printf("Jump erroe!");
+}
+void clearscreen(){
 	return 0;
 }
 
+
+uint16_t Decode(struct Chip8 * c, struct opcode o){
+	switch(o->op1)
+	{
+	case 0: clearscreen();
+		break;
+	case 1: jump(o.NNN, c);
+		break;
+	case 6: set_register(o.op2, o.com2,c);
+		break;
+	case 7: add_register(o.op2, o.com2,c);
+		break;
+	case 10: set_index(o.NNN, c);
+		break;
+	case 13: draw();
+		break;
+	}
+}
+
+int main (){
+  struct Chip8 chip;
+  uint16_t i;
+  i = resetchip(&chip);
+  struct opcode op;
+  if (i==0x200) printf("reset OK");
+  //Fetch/Decode/Execute loop
+  i = Fetch(&chip, &op);
+  if (i>0x200 && i<0xFFF && i == chip.pc) ;//Fetch OK
+  i = Decode(&chip, op);
+  //Display loop
+  return 0;
+}
