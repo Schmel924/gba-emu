@@ -1,11 +1,15 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include "raylib.h"
+
+#define windowsizeX  32
+#define windowsizeY  64
 
 // specification
 struct Chip8{
 	uint8_t mem[4096];
-	bool display[64][32];
+	bool display[windowsizeY][windowsizeX];
 	uint16_t pc;
 	uint16_t index;
 	uint16_t stack[256];
@@ -98,7 +102,51 @@ void clearscreen(){
 	return ;
 }
 
-void draw(){
+void	clearcanvas(bool  canvas[64][32]){
+	for (int i = 0; i<windowsizeX; i++)
+	{
+		for (int j = 0; j<windowsizeY; j++)
+		{ canvas[i][j] = false;
+		}
+	}
+}
+
+void draw(int rx, int ry, int amount, struct Chip8 * c){
+	int x = c->registers[rx];
+	int y = c->registers[ry];
+	int dis[amount];
+	bool canvas[windowsizeY][windowsizeX];
+	clearcanvas(canvas);
+	for (int i = 0; i<amount;i++)
+	{
+		dis[i] = c->mem[(c->index)+i];
+	}
+
+	// bounders check
+	if ((x+amount > windowsizeX) || (y+8>windowsizeY)) printf("dipslay bounders unchekd\n");
+
+	//decode dis
+	for (int i = 0; i<amount; i++)
+	{
+		for (int j = 0; j<8; j++)
+		{
+			uint8_t a = 0x80 >> j; // Надо перепроверить
+			canvas[x+i][y+j] = (dis[i] & a) != 0;
+		}
+	}
+
+	//draw
+	for (int i = 0; i<windowsizeX; i++)
+	{
+		for (int j = 0; j<windowsizeY; j++)
+		{
+			if (canvas[i][j])
+				{
+					if (c->display[i][j]) printf("detectedd collision");
+					c->display[i][j] = !(c->display[i][j]);
+				}
+		}
+	}
 	return;
 }
 
@@ -115,7 +163,7 @@ uint16_t Decode(struct Chip8 * c, struct opcode o){
 		break;
 	case 10: set_index(o.NNN, c);
 		break;
-	case 13: draw();
+	case 13: draw(o.op2,o.op3,o.op4, c);
 		break;
 	}
 	return o.op1;
@@ -128,6 +176,11 @@ int main (){
 	struct opcode op;
 	if (i==0x200) printf("reset OK");
 
+	const int screenWidth = 800;
+	const int screenHeight = 450;
+	InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
+	SetTargetFPS(60);
+ 
 	//Fetch/Decode/Execute loop
 	printf("\nregister0 = %u",chip.registers[0]);
 	i = Fetch(&chip, &op);
@@ -137,5 +190,13 @@ int main (){
 	printf("\nregister0 = %u",chip.registers[0]);
 
 	//Display loop
+
+	while (!WindowShouldClose())    // Detect window close button or ESC key
+	{
+	BeginDrawing();
+	ClearBackground(RAYWHITE);
+	DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
+	EndDrawing(); }
+	CloseWindow();
 	return 0;
 }

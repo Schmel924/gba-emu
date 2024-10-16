@@ -1,7 +1,6 @@
 CC=gcc
 CFLAGS=-c -Wall -Wpedantic
-LDFLAGS=
-RAYLIBFLAGS= -lraylib -lm -lpthread -ldl -lrt -lX11
+LDFLAGS= -lraylib -lm -lpthread -ldl -lrt -lX11
 files:=hello raylib
 all:$(files) 
 
@@ -9,14 +8,14 @@ all:$(files)
 raylib.o: raylib.c
 	$(CC) $(LDFLAGS) $(CFLAGS) $^
 raylib: raylib.o
-	$(CC) $(LDFLAGS) $^ $(RAYLIBFLAGS) -o $@
+	$(CC) $^ $(LDFLAGS) -o $@
 
 
 
 hello: hello.o
-	$(CC) $^ -o $@
+	$(CC) $^ $(LDFLAGS) -o $@
 hello.o: hello.c
-	$(CC) $(LDFLAGS) $(CFLAGS) $^
+	$(CC) $(CFLAGS) $^
 
 clean: 
 	rm -f *.o $(files)
