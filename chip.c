@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "raylib.h"
 #include "chip.h"
 
 const uint8_t font[80]=
@@ -23,20 +22,31 @@ const uint8_t font[80]=
 };
 
 
-void memtest(struct Chip8 * c){
+void resetdisplay(struct Chip8 * c){
+	for (int i = 0; i<windowsizeY; i++) 
+	for (int j = 0; j<windowsizeX; j++)
+			c->display[i][j] = false;
+}
+
+void resetmem(struct Chip8 * c){
 	int i = 4096;
 	for(i=4096;i>0;i--)
-	c->mem[i] = i;
+	c->mem[i] = 0;
 }
 
 uint16_t resetchip(struct Chip8 * c){
-	memtest(c);
-	int i=0;
-	for (i=0;i<=80;i++)
+	resetmem(c);
+	for (int i=0;i<=80;i++)
 		c->mem[80+i] = font[i];
 	c->pc = 0x200;
-	c->mem[0x200] = 0x60;
-	c->mem[0x201] = 69;
+	for (int i = 0; i<16; i++) {
+		c->registers[i]=0;
+	}
+	resetdisplay(c);
+	c->index = 0;
+	c->sp = 0;
+	c->timer = 0;
+	c->stimer = 0;
 	return c->pc;
 }
 
