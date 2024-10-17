@@ -62,7 +62,7 @@ uint16_t Fetch(struct Chip8 * c, struct opcode * o){
 	o->com2 = com;
 	
 	o->NNN = ((o->op2 << 8) | com);
-
+//printf("Fetched inctruction %d\n it contain op1 %x\n op2 %x\n op3 %x\n op4 %x\n",c->pc, o->op1, o->op2, o->op3, o->op4);
 	c->pc = c->pc + 2;
 	return c->pc;
 }
@@ -81,22 +81,23 @@ void jump(unsigned long adress, struct Chip8 * c){
 		c->pc = adress;
 	else printf("Jump erroe!");
 }
-void clearscreen(){
+void clearscreen(struct Chip8 * c){
+	resetdisplay(c);
 	return ;
 }
 
-void	clearcanvas(bool  canvas[64][32]){
-	for (int i = 0; i<windowsizeX; i++)
+void	clearcanvas(bool  canvas[windowsizeY][windowsizeX]){
+	for (int i = 0; i<windowsizeY; i++)
 	{
-		for (int j = 0; j<windowsizeY; j++)
+		for (int j = 0; j<windowsizeX; j++)
 		{ canvas[i][j] = false;
 		}
 	}
 }
 
 void draw(int rx, int ry, int amount, struct Chip8 * c){
-	int x = c->registers[rx];
-	int y = c->registers[ry];
+	int x = c->registers[ry];
+	int y = c->registers[rx];
 	int dis[amount];
 	bool canvas[windowsizeY][windowsizeX];
 	clearcanvas(canvas);
@@ -114,14 +115,14 @@ void draw(int rx, int ry, int amount, struct Chip8 * c){
 		for (int j = 0; j<8; j++)
 		{
 			uint8_t a = 0x80 >> j; // Надо перепроверить
-			canvas[x+i][y+j] = (dis[i] & a) != 0;
+			canvas[y+j][x+i] = (dis[i] & a) != 0;
 		}
 	}
 
 	//draw
-	for (int i = 0; i<windowsizeX; i++)
+	for (int i = 0; i<windowsizeY; i++)
 	{
-		for (int j = 0; j<windowsizeY; j++)
+		for (int j = 0; j<windowsizeX; j++)
 		{
 			if (canvas[i][j])
 				{
@@ -136,17 +137,23 @@ void draw(int rx, int ry, int amount, struct Chip8 * c){
 uint16_t Decode(struct Chip8 * c, struct opcode o){
 	switch(o.op1)
 	{
-	case 0: clearscreen();
+	case 0: clearscreen(c);
+	//		printf("clrscr\n");
 		break;
 	case 1: jump(o.NNN, c);
+	//		printf("jump\n");
 		break;
 	case 6: set_register(o.op2, o.com2,c);
+	//		printf("set");
 		break;
 	case 7: add_register(o.op2, o.com2,c);
+	//		printf("add");
 		break;
 	case 10: set_index(o.NNN, c);
+	//		printf("Index");
 		break;
 	case 13: draw(o.op2,o.op3,o.op4, c);
+	//		printf("draw\n");
 		break;
 	}
 	return o.op1;

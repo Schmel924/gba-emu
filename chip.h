@@ -39,3 +39,4 @@ void clearscreen();
 void	clearcanvas(bool  canvas[64][32]);
 void draw(int rx, int ry, int amount, struct Chip8 * c);
 uint16_t Decode(struct Chip8 * c, struct opcode o);
+void clearscreen(struct Chip8 * c);
