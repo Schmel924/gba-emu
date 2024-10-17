@@ -1,6 +1,6 @@
 CC=gcc
-CFLAGS=-c -Wall -Wpedantic
-LDFLAGS= -lraylib -lm -lpthread -ldl -lrt -lX11
+CFLAGS=-c -Wall -Wpedantic -g
+LDFLAGS= -lraylib -lm -lpthread -ldl -lrt -lX11 -g
 files:=hello
 all:$(files) 
 

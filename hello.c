@@ -13,7 +13,8 @@ int main (){
 	i = resetchip(&chip);
 	struct opcode op;
 	if (i==0x200) printf("reset OK");
-	FILE *f = fopen("logo.ch", "r");
+	FILE *f = fopen("roms/logo.ch", "r");
+	if (f == NULL) printf("Eroor in reading file");
 	uint8_t a = 0;
 	while(fread( &a, sizeof(a), 1, f) == 1 && ++i<3500)
 		chip.mem[0x200+i] = a;
