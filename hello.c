@@ -14,11 +14,11 @@ int main (){
 	int scale = 10;
 	struct opcode op;
 	if (i==0x200) printf("reset OK");
-	FILE *f = fopen("roms/logo.ch", "r");
+	FILE *f = fopen("roms/games/MAZE", "r");
 	if (f == NULL) printf("Eroor in reading file");
 	uint8_t a = 0;
 	while(fread( &a, sizeof(a), 1, f) == 1 && i<3500){
-		printf("%x wrote in %d place\n",a,i);
+		//printf("%x wrote in %d place\n",a,i);
 		chip.mem[i] = a;
 		i++;
 	}
@@ -26,16 +26,11 @@ int main (){
 	const int screenHeight = scale*windowsizeX;
 	InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
 	SetTargetFPS(60);
-	//Fetch/Decode/Execute loop
-	while(op.op1 != 1) {
-		Fetch(&chip, &op);
-		//printf("in %x pos we have op %x\n", chip.pc, chip.mem[chip.pc]);
-		Decode(&chip, op);
-	}
-	//Display loop
 
 	while (!WindowShouldClose())    // Detect window close button or ESC key
 	{
+		Fetch(&chip, &op);
+		Decode(&chip, op);
 	BeginDrawing();
 	ClearBackground(RAYWHITE);
 	int delta = 10;

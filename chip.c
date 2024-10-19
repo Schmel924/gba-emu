@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "chip.h"
 
+bool keyboard[16];
+
 const uint8_t font[80]=
 {
 0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -134,28 +136,182 @@ void draw(int rx, int ry, int amount, struct Chip8 * c){
 	return;
 }
 
+void condjump(uint8_t a, uint8_t b, bool condition, struct Chip8 * c)
+{
+    if ((a==b) == condition) c->pc = c->pc + 2;
+}
+
+void retfunc(struct Chip8 * c){
+    c->sp = c->sp-1;
+    c->pc = c->stack[c->sp];
+}
+void call(unsigned long adress, struct Chip8 * c){
+    c->stack[c->sp] = c->pc;
+    c->sp = c->sp +1;
+    c->pc = adress;
+}
+void decimal(int value, struct Chip8 * c){
+    int a,b,t;
+    a = value / 100;
+    b = (value/10)%10;
+    t = value%10;
+    c->mem[c->index+0] = a;
+    c->mem[c->index+1] = b;
+    c->mem[c->index+2] = t;
+}
+void Logical(uint8_t* a,uint8_t b, int op)
+{
+    if (op == 1) *a = *a|b;
+    if (op == 2) *a = *a&b;
+    if (op == 3) *a = *a^b;
+}
+void settimer(uint8_t value, uint8_t * timer){
+    *timer = value;
+}
+void addIndex(uint8_t value, struct Chip8 * c){
+    c->index = c->index + value;
+    if (c->index > 0xFFF) c->registers[15] = 1;
+}
+void waitforinput(uint8_t *key, struct Chip8 * c){
+    c->pc = c->pc - 2;
+    for (int i = 0; i < 16; i ++)
+            {
+                if (keyboard[i]) *key = i;
+                c->pc = c->pc + 2;
+                break;  
+            }
+}
+void findchar(uint8_t chara, struct Chip8 * c){
+    c->index = 0x80+(chara&0x0F)*10;
+    //TODO: if char == 0
+}
+void trueadd(uint8_t * a, uint8_t b, uint8_t * carry){
+    int sum = *a +b ;
+    if (sum > 255) {
+        *a = 255; *carry = 1;
+    } 
+    else
+        {
+        *a = sum; 
+        *carry = 0;
+    }
+}
+void stor(int x, struct Chip8 * c){
+    int index = c->index;
+    for (int i = 0; i <=x; i++)
+            {
+                c->mem[index+i] = c->registers[i];
+            }
+}
+void load(int x, struct Chip8 * c){
+    int index = c->index;
+    for (int i = 0; i <=x; i++)
+            {
+                c->registers[i] = c->mem[index+i];
+            }
+}
+void subtract5(uint8_t * a,uint8_t b, uint8_t * carry){
+   if (b > *a) *carry = 0;
+   else *carry = 1;
+   *a = *a-b;
+}
+void  ofjump(unsigned long adress, struct Chip8 * c){
+    c->pc = adress + c->registers[0];
+}
+void subtract7(uint8_t * a,uint8_t b,  uint8_t * carry){
+   if (b < *a) *carry = 0;
+   else *carry = 1;
+   *a = b - *a ;
+}
+void ShiftR(uint8_t * a,uint8_t b, uint8_t * carry){
+//TODO configurable bit about using b
+    *carry  = b & 0x01;
+    *a = b >> 1;
+}
+void ShiftL(uint8_t * a,uint8_t b, uint8_t * carry){
+//TODO configurable bit about using b
+    *carry  = b & 0x80;
+    *a = b << 1;
+}
 uint16_t Decode(struct Chip8 * c, struct opcode o){
 	switch(o.op1)
 	{
-	case 0: clearscreen(c);
-	//		printf("clrscr\n");
+		case 0: 
+		switch(o.op4)
+		{
+		case 0: clearscreen(c); break;
+		case 0xE: retfunc(c); break;
+		}
 		break;
 	case 1: jump(o.NNN, c);
-	//		printf("jump\n");
 		break;
+	case 2: call(o.NNN, c);
+	break;
+	case 3: condjump(c->registers[o.op2],o.com2,true, c);
+	break;   
+	case 4: condjump(c->registers[o.op2],o.com2,false, c);
+	break;
+	case 5: condjump(c->registers[o.op2],c->registers[o.op3],true, c);
+	break;   
 	case 6: set_register(o.op2, o.com2,c);
 	//		printf("set");
 		break;
-	case 7: add_register(o.op2, o.com2,c);
+	case 7: add_register(o.op2, o.com2,c); break;
 	//		printf("add");
-		break;
+    case 8: 
+           switch(o.op4)
+        {
+        case 0: 
+            set_register(o.op2, c->registers[o.op3],c); break;
+        case 1:
+        case 2:
+        case 3:
+            Logical(&c->registers[o.op2],c->registers[o.op3],o.op4); break;
+        case 4: 
+            trueadd(&c->registers[o.op2],c->registers[o.op3], &c->registers[15]); break;
+        case 5:
+            subtract5(&c->registers[o.op2],c->registers[o.op3],  &c->registers[15]); break;
+        case 6: 
+            ShiftR(&c->registers[o.op2],c->registers[o.op3], &c->registers[15]); break;
+        case 0xE:
+            ShiftL(&c->registers[o.op2],c->registers[o.op3], &c->registers[15]); break;
+        case 7:
+            subtract7(&c->registers[o.op2],c->registers[o.op3],  &c->registers[15]); break;
+        }
+        break;    
+	case 9: condjump(c->registers[o.op2],c->registers[o.op3],false, c);
+        break;    
 	case 10: set_index(o.NNN, c);
 	//		printf("Index");
 		break;
-	case 13: draw(o.op2,o.op3,o.op4, c);
+	case 11: ofjump(o.NNN, c);
+        break;
+ case 13: draw(o.op2,o.op3,o.op4, c);
 	//		printf("draw\n");
 		break;
-	}
+	    case 0xF:
+        switch (o.com2){
+        case 0x07: set_register(o.op2, c->timer, c);
+            break;
+        case 0x15: settimer(c->registers[o.op2], &c->timer);
+            break;
+        case 0x18: settimer(c->registers[o.op2], &c->stimer);
+            break;
+        case 0x1E: addIndex(c->registers[o.op2], c);
+            break;
+        case 0x0A: waitforinput(&c->registers[o.op2], c);
+            break;
+        case 0x29: findchar(c->registers[o.op2], c);
+            break;
+        case 0x33: decimal(c->registers[o.op2], c);
+            break;
+        case 0x55: stor(o.op2, c);
+            break;
+        case 0x65: load(o.op2, c); 
+            break;
+        }
+		break;
+ }
 	return o.op1;
 }
 
