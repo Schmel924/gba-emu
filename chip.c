@@ -33,7 +33,7 @@ void resetdisplay(struct Chip8 * c){
 void resetmem(struct Chip8 * c){
 	int i = 4096;
 	for(i=4096;i>0;i--)
-	c->mem[i] = 0;
+		c->mem[i] = 0;
 }
 
 uint16_t resetchip(struct Chip8 * c){
@@ -63,7 +63,7 @@ uint16_t Fetch(struct Chip8 * c, struct opcode * o){
 	o->op4 =  (com & 0xF);
 	o->com2 = com;
 	
-	o->NNN = ((o->op2 << 8) | com);
+	o->NNN = ((o->op2 << 8) | com); 
 //printf("Fetched inctruction %d\n it contain op1 %x\n op2 %x\n op3 %x\n op4 %x\n",c->pc, o->op1, o->op2, o->op3, o->op4);
 	c->pc = c->pc + 2;
 	return c->pc;
@@ -107,16 +107,14 @@ void draw(int rx, int ry, int amount, struct Chip8 * c){
 	{
 		dis[i] = c->mem[(c->index)+i];
 	}
-
 	// bounders check
 	if ((x+amount > windowsizeX) || (y+8>windowsizeY)) printf("dipslay bounders unchekd\n");
-
 	//decode dis
 	for (int i = 0; i<amount; i++)
 	{
 		for (int j = 0; j<8; j++)
 		{
-			uint8_t a = 0x80 >> j; // Надо перепроверить
+			uint8_t a = 0x80 >> j;
 			canvas[y+j][x+i] = (dis[i] & a) != 0;
 		}
 	}
@@ -128,7 +126,10 @@ void draw(int rx, int ry, int amount, struct Chip8 * c){
 		{
 			if (canvas[i][j])
 				{
-					if (c->display[i][j]) printf("detectedd collision");
+					if (c->display[i][j]) {
+						c->registers[15] = 1;
+						printf("detectedd collision");
+					}
 					c->display[i][j] = !(c->display[i][j]);
 				}
 		}
@@ -144,6 +145,7 @@ void condjump(uint8_t a, uint8_t b, bool condition, struct Chip8 * c)
 void retfunc(struct Chip8 * c){
     c->sp = c->sp-1;
     c->pc = c->stack[c->sp];
+	c->stack[c->sp] = 0;
 }
 void call(unsigned long adress, struct Chip8 * c){
     c->stack[c->sp] = c->pc;
@@ -239,76 +241,75 @@ uint16_t Decode(struct Chip8 * c, struct opcode o){
 		case 0: 
 		switch(o.op4)
 		{
-		case 0: clearscreen(c); break;
-		case 0xE: retfunc(c); break;
+			case 0: clearscreen(c); 
+				break;
+			case 0xE: retfunc(c); 
+				break;
 		}
-		break;
-	case 1: jump(o.NNN, c);
-		break;
-	case 2: call(o.NNN, c);
-	break;
-	case 3: condjump(c->registers[o.op2],o.com2,true, c);
-	break;   
-	case 4: condjump(c->registers[o.op2],o.com2,false, c);
-	break;
-	case 5: condjump(c->registers[o.op2],c->registers[o.op3],true, c);
-	break;   
-	case 6: set_register(o.op2, o.com2,c);
-	//		printf("set");
-		break;
-	case 7: add_register(o.op2, o.com2,c); break;
-	//		printf("add");
-    case 8: 
+			break;
+		case 1: jump(o.NNN, c);
+			break;
+		case 2: call(o.NNN, c);
+			break;
+		case 3: condjump(c->registers[o.op2],o.com2,true, c);
+			break;   
+		case 4: condjump(c->registers[o.op2],o.com2,false, c);
+			break;
+		case 5: condjump(c->registers[o.op2],c->registers[o.op3],true, c);
+			break;   
+		case 6: set_register(o.op2, o.com2,c);
+			break;
+		case 7: add_register(o.op2, o.com2,c); 
+			break;
+		case 8: 
            switch(o.op4)
         {
-        case 0: 
-            set_register(o.op2, c->registers[o.op3],c); break;
-        case 1:
-        case 2:
-        case 3:
-            Logical(&c->registers[o.op2],c->registers[o.op3],o.op4); break;
-        case 4: 
-            trueadd(&c->registers[o.op2],c->registers[o.op3], &c->registers[15]); break;
-        case 5:
-            subtract5(&c->registers[o.op2],c->registers[o.op3],  &c->registers[15]); break;
-        case 6: 
-            ShiftR(&c->registers[o.op2],c->registers[o.op3], &c->registers[15]); break;
-        case 0xE:
-            ShiftL(&c->registers[o.op2],c->registers[o.op3], &c->registers[15]); break;
-        case 7:
-            subtract7(&c->registers[o.op2],c->registers[o.op3],  &c->registers[15]); break;
+			case 0: set_register(o.op2, c->registers[o.op3],c); 
+				break;
+        	case 1:
+        	case 2:
+        	case 3: Logical(&c->registers[o.op2],c->registers[o.op3],o.op4); 
+				break;
+        	case 4: trueadd(&c->registers[o.op2],c->registers[o.op3], &c->registers[15]); 
+				break;
+        	case 5: subtract5(&c->registers[o.op2],c->registers[o.op3],  &c->registers[15]); 
+				break;
+        	case 6: ShiftR(&c->registers[o.op2],c->registers[o.op3], &c->registers[15]); 
+				break;
+        	case 0xE: ShiftL(&c->registers[o.op2],c->registers[o.op3], &c->registers[15]); 
+				break;
+        	case 7: subtract7(&c->registers[o.op2],c->registers[o.op3],  &c->registers[15]); 
+				break;
         }
-        break;    
-	case 9: condjump(c->registers[o.op2],c->registers[o.op3],false, c);
-        break;    
-	case 10: set_index(o.NNN, c);
-	//		printf("Index");
-		break;
-	case 11: ofjump(o.NNN, c);
-        break;
- case 13: draw(o.op2,o.op3,o.op4, c);
-	//		printf("draw\n");
-		break;
+        	break;
+		case 9: condjump(c->registers[o.op2],c->registers[o.op3],false, c);
+        	break;
+		case 0xA: set_index(o.NNN, c);
+			break;
+		case 0xB: ofjump(o.NNN, c);
+        	break;
+ 		case 0xD: draw(o.op2,o.op3,o.op4, c);
+			break;
 	    case 0xF:
         switch (o.com2){
-        case 0x07: set_register(o.op2, c->timer, c);
-            break;
-        case 0x15: settimer(c->registers[o.op2], &c->timer);
-            break;
-        case 0x18: settimer(c->registers[o.op2], &c->stimer);
-            break;
-        case 0x1E: addIndex(c->registers[o.op2], c);
-            break;
-        case 0x0A: waitforinput(&c->registers[o.op2], c);
-            break;
-        case 0x29: findchar(c->registers[o.op2], c);
-            break;
-        case 0x33: decimal(c->registers[o.op2], c);
-            break;
-        case 0x55: stor(o.op2, c);
-            break;
-        case 0x65: load(o.op2, c); 
-            break;
+			case 0x07: set_register(o.op2, c->timer, c);
+            	break;
+	        case 0x15: settimer(c->registers[o.op2], &c->timer);
+	            break;
+	        case 0x18: settimer(c->registers[o.op2], &c->stimer);
+	            break;
+	        case 0x1E: addIndex(c->registers[o.op2], c);
+	            break;
+	        case 0x0A: waitforinput(&c->registers[o.op2], c);
+	            break;
+	        case 0x29: findchar(c->registers[o.op2], c);
+	            break;
+	        case 0x33: decimal(c->registers[o.op2], c);
+	            break;
+	        case 0x55: stor(o.op2, c);
+	            break;
+	        case 0x65: load(o.op2, c); 
+	            break;
         }
 		break;
  }
