@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include "chip.h"
 
@@ -25,8 +26,8 @@ const uint8_t font[80]=
 
 
 void resetdisplay(struct Chip8 * c){
-	for (int i = 0; i<windowsizeY; i++) 
-	for (int j = 0; j<windowsizeX; j++)
+	for (int i = 0; i<windowsizeX; i++) 
+	for (int j = 0; j<windowsizeY; j++)
 			c->display[i][j] = false;
 }
 
@@ -88,53 +89,32 @@ void clearscreen(struct Chip8 * c){
 	return ;
 }
 
-void	clearcanvas(bool  canvas[windowsizeY][windowsizeX]){
-	for (int i = 0; i<windowsizeY; i++)
+void	clearcanvas(bool  canvas[windowsizeX][windowsizeY]){
+	for (int i = 0; i<windowsizeX; i++)
 	{
-		for (int j = 0; j<windowsizeX; j++)
+		for (int j = 0; j<windowsizeY; j++)
 		{ canvas[i][j] = false;
 		}
 	}
 }
 
 void draw(int rx, int ry, int amount, struct Chip8 * c){
-	int x = c->registers[ry];
-	int y = c->registers[rx];
-	int dis[amount];
-	bool canvas[windowsizeY][windowsizeX];
-	clearcanvas(canvas);
-	for (int i = 0; i<amount;i++)
-	{
-		dis[i] = c->mem[(c->index)+i];
-	}
-	// bounders check
-	if ((x+amount > windowsizeX) || (y+8>windowsizeY)) printf("dipslay bounders unchekd\n");
-	//decode dis
-	for (int i = 0; i<amount; i++)
-	{
-		for (int j = 0; j<8; j++)
-		{
-			uint8_t a = 0x80 >> j;
-			canvas[y+j][x+i] = (dis[i] & a) != 0;
+	int x = c->registers[rx];
+	int y = c->registers[ry];
+	x = x % windowsizeX;
+	y = y % windowsizeY;
+	c->registers[15]=0;
+	for(int i =0; i < amount; i++){
+		uint8_t spriterow = c->mem[(c->index)+i];
+		for (int j = 0; j<8; j++){
+			bool pixel = (spriterow &(0x80 >>j)) != 0;
+			if (pixel) {
+				if (c->display[x+j][y+i]) { c->registers[15] = 1;}
+				c->display[x+j][y+i] = !(c->display[x+j][y+i]);
+			}
 		}
-	}
 
-	//draw
-	for (int i = 0; i<windowsizeY; i++)
-	{
-		for (int j = 0; j<windowsizeX; j++)
-		{
-			if (canvas[i][j])
-				{
-					if (c->display[i][j]) {
-						c->registers[15] = 1;
-						printf("detectedd collision");
-					}
-					c->display[i][j] = !(c->display[i][j]);
-				}
-		}
 	}
-	return;
 }
 
 void condjump(uint8_t a, uint8_t b, bool condition, struct Chip8 * c)
@@ -307,12 +287,14 @@ uint16_t Decode(struct Chip8 * c, struct opcode o){
 	        case 0x33: decimal(c->registers[o.op2], c);
 	            break;
 	        case 0x55: stor(o.op2, c);
+					printf("here i segfault\n");
 	            break;
 	        case 0x65: load(o.op2, c); 
 	            break;
         }
 		break;
  }
+	printf("op1 is %x\n op2 is %x\n", o.com1, o.com2);
 	return o.op1;
 }
 
