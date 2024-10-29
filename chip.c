@@ -193,27 +193,35 @@ void load(int x, struct Chip8 * c){
             }
 }
 void subtract5(uint8_t * a,uint8_t b, uint8_t * carry){
-   if (b > *a) *carry = 0;
-   else *carry = 1;
-   *a = *a-b;
+	uint8_t car;
+	if (b > *a) car = 0;
+	else car = 1;
+	*a = *a-b;
+	*carry = car;
 }
 void  ofjump(unsigned long adress, struct Chip8 * c){
     c->pc = adress + c->registers[0];
 }
 void subtract7(uint8_t * a,uint8_t b,  uint8_t * carry){
-   if (b < *a) *carry = 0;
-   else *carry = 1;
-   *a = b - *a ;
+	uint8_t car = 0;
+	if (b < *a) car = 0;
+	else car = 1;
+	*a = b - *a ;
+	*carry = car;
 }
 void ShiftR(uint8_t * a,uint8_t b, uint8_t * carry){
-//TODO configurable bit about using b
-    *carry  = b & 0x01;
-    *a = b >> 1;
+	//TODO configurable bit about using b
+	uint8_t car = 0;
+	car  = b & 0x01;
+	*a = b >> 1;
+	*carry = car;
 }
 void ShiftL(uint8_t * a,uint8_t b, uint8_t * carry){
-//TODO configurable bit about using b
-    *carry  = b & 0x80;
-    *a = b << 1;
+	//TODO configurable bit about using b
+	uint8_t car = 0;
+	car  = (b & 0x80) >> 7;
+	*a = b << 1;
+	*carry = car;
 }
 uint16_t Decode(struct Chip8 * c, struct opcode o){
 	switch(o.op1)
@@ -256,9 +264,9 @@ uint16_t Decode(struct Chip8 * c, struct opcode o){
 				break;
         	case 6: ShiftR(&c->registers[o.op2],c->registers[o.op3], &c->registers[15]); 
 				break;
-        	case 0xE: ShiftL(&c->registers[o.op2],c->registers[o.op3], &c->registers[15]); 
-				break;
         	case 7: subtract7(&c->registers[o.op2],c->registers[o.op3],  &c->registers[15]); 
+				break;
+        	case 0xE: ShiftL(&c->registers[o.op2],c->registers[o.op3], &c->registers[15]); 
 				break;
         }
         	break;
