@@ -170,7 +170,7 @@ void findchar(uint8_t chara, struct Chip8 * c){
 void trueadd(uint8_t * a, uint8_t b, uint8_t * carry){
     int sum = *a +b ;
     if (sum > 255) {
-        *a = 255; *carry = 1;
+        *a = sum - 256; *carry = 1;
     } 
     else
         {
