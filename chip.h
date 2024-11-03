@@ -14,7 +14,10 @@ struct Chip8{
 	uint8_t timer;
 	uint8_t stimer;
 	uint8_t registers[16];
+	bool keyboard[16];
+	int realkeyboard[16];
 };
+
 
 struct opcode{
 	int op1;
@@ -40,3 +43,5 @@ void	clearcanvas(bool  canvas[windowsizeX][windowsizeY]);
 void draw(int rx, int ry, int amount, struct Chip8 * c);
 uint16_t Decode(struct Chip8 * c, struct opcode o);
 void clearscreen(struct Chip8 * c);
+void assignkeys(int realkeyboard[]);
+void cleankeyboard(bool * keyboard);

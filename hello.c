@@ -35,6 +35,15 @@ int main (int argc, char * * argv){
 
 	while (!WindowShouldClose())    // Detect window close button or ESC key
 	{
+		int input = GetKeyPressed();
+		for (int i = 0; i<16; i++){
+			if (chip.keyboard[i] && IsKeyDown(chip.realkeyboard[i])) 
+				continue;
+			else 
+				chip.keyboard[i] = false;
+			if (chip.realkeyboard[i]==input) 
+				chip.keyboard[i] = true; 
+		}
 		Fetch(&chip, &op);
 		Decode(&chip, op);
 	BeginDrawing();
