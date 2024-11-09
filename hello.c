@@ -4,10 +4,10 @@
 #include "chip.h"
 uint8_t inputDecode(char i){
 	switch (i) {
-	case 1: return 1;
-	case 2: return 2;
-	case 3: return 3;
-	case 4: return 12;
+	case '1': return 1;
+	case '2': return 2;
+	case '3': return 3;
+	case '4': return 12;
 	case 'q': return 4;
 	case 'w': return 5;
 	case 'e': return 6;
@@ -31,6 +31,8 @@ void drawDebug(struct Chip8 * c, struct opcode * op){
 	DrawText(TextFormat("opcode is _%u", c->registers[1]), 10*windowsizeX, 10, 1, BLACK);
 	DrawText(TextFormat("opcode is _%u", c->registers[2]), 10*windowsizeX, 20, 1, BLACK);
 	DrawText(TextFormat("opcode is _%u", c->registers[3]), 10*windowsizeX, 30, 1, BLACK);
+
+	DrawText(TextFormat("Keycode is _%u", c->keypressed ), 10*windowsizeX, 40, 1, BLACK);
 }
 void DrawChipxel(int i,int j,int delta,Color color)
 {
@@ -57,7 +59,7 @@ int main (int argc, char * * argv){
 		chip.mem[i] = a;
 		i++;
 	}
-	chip.mem[0x1ff] = 1; //auto keyboard tester
+	chip.mem[0x1ff] = 2; //auto keyboard tester
 	const int screenWidth = scale*windowsizeX+100;
 	const int screenHeight = scale*windowsizeY;
 	InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");

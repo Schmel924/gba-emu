@@ -242,11 +242,23 @@ void checkifkeypressed(uint8_t key, struct Chip8 * c){
 	c->pc = c->pc + 2;
 }
 
+void checkifkeyreleased(uint8_t key, struct Chip8 *c){
+	if ( c->keypressed != key)
+		c->pc = c->pc + 2;
+}
+
 uint16_t Decode(struct Chip8 * c, struct opcode o){
 	switch(o.op1)
 	{
-		case 0xE: checkifkeypressed(c->registers[o.op2], c);
-			break;
+		case 0xE:
+			switch(o.op4){
+				case 0xE:
+				checkifkeypressed(c->registers[o.op2], c);
+				break;
+				case 0x1:
+				checkifkeyreleased (c->registers[o.op2], c);
+				break;
+			}
 		case 0: 
 		switch(o.op4)
 		{
