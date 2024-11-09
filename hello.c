@@ -59,7 +59,7 @@ int main (int argc, char * * argv){
 		chip.mem[i] = a;
 		i++;
 	}
-	chip.mem[0x1ff] = 2; //auto keyboard tester
+	chip.mem[0x1ff] = 3; //auto keyboard tester
 	const int screenWidth = scale*windowsizeX+100;
 	const int screenHeight = scale*windowsizeY;
 	InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
@@ -88,7 +88,9 @@ int main (int argc, char * * argv){
 			DrawRectangle(scale*i, scale*j, scale, scale, BLACK); 
 		}  
 		}
-	EndDrawing(); }
+	EndDrawing(); 
+	input = -1;
+	}
 	CloseWindow();
 	return 0;
 }

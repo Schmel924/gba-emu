@@ -170,12 +170,10 @@ void addIndex(uint8_t value, struct Chip8 * c){
 }
 void waitforinput(uint8_t *key, struct Chip8 * c){
     c->pc = c->pc - 2;
-    for (int i = 0; i < 16; i ++)
-            {
-                if (keyboard[i]) *key = i;
-                c->pc = c->pc + 2;
-                break;  
-            }
+	if (c->keypressed != 255){
+		c->registers[*key] = c->keypressed;
+	c->pc = c->pc + 2;
+}
 }
 void findchar(uint8_t chara, struct Chip8 * c){
     c->index = 0x80+(chara&0x0F)*10;
