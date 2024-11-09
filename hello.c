@@ -2,7 +2,36 @@
 #include <string.h>
 #include "raylib.h"
 #include "chip.h"
+uint8_t inputDecode(char i){
+	switch (i) {
+	case 1: return 1;
+	case 2: return 2;
+	case 3: return 3;
+	case 4: return 12;
+	case 'q': return 4;
+	case 'w': return 5;
+	case 'e': return 6;
+	case 'r': return 13;
+	case 'a': return 7;
+	case 's': return 8;
+	case 'd': return 9;
+	case 'f': return 14;
+	case 'z': return 10;
+	case 'x': return 0;
+	case 'c': return 11;
+	case 'v': return 15;
+	}
+	return -1;
+}
 
+void drawDebug(struct Chip8 * c, struct opcode * op){
+	DrawText(TextFormat("opcode is _%u", op->op1), 10*windowsizeX, 0, 1, BLACK);
+
+	DrawText(TextFormat("opcode is _%u", c->registers[0] ), 10*windowsizeX, 0, 1, BLACK);
+	DrawText(TextFormat("opcode is _%u", c->registers[1]), 10*windowsizeX, 10, 1, BLACK);
+	DrawText(TextFormat("opcode is _%u", c->registers[2]), 10*windowsizeX, 20, 1, BLACK);
+	DrawText(TextFormat("opcode is _%u", c->registers[3]), 10*windowsizeX, 30, 1, BLACK);
+}
 void DrawChipxel(int i,int j,int delta,Color color)
 {
 	DrawPixel(delta+i,delta+j,color);
@@ -28,23 +57,19 @@ int main (int argc, char * * argv){
 		chip.mem[i] = a;
 		i++;
 	}
-	const int screenWidth = scale*windowsizeX;
+	chip.mem[0x1ff] = 1; //auto keyboard tester
+	const int screenWidth = scale*windowsizeX+100;
 	const int screenHeight = scale*windowsizeY;
 	InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
 	SetTargetFPS(30);
-
+	char input = -1;
 	while (!WindowShouldClose())    // Detect window close button or ESC key
 	{
-		int input = GetKeyPressed();
-		for (int i = 0; i<16; i++){
-			if (chip.keyboard[i] && IsKeyDown(chip.realkeyboard[i])) 
-				continue;
-			else 
-				chip.keyboard[i] = false;
-			if (chip.realkeyboard[i]==input) 
-				chip.keyboard[i] = true; 
-		}
+		char in = GetCharPressed();
+		if (in != 0) input = in;
+		chip.keypressed = inputDecode(input);
 		Fetch(&chip, &op);
+		drawDebug(&chip, &op);
 		Decode(&chip, op);
 	BeginDrawing();
 	ClearBackground(RAYWHITE);

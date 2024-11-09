@@ -51,6 +51,8 @@ uint16_t resetchip(struct Chip8 * c){
 	c->timer = 0;
 	c->stimer = 0;
 	return c->pc;
+	cleankeyboard(c->keyboard);
+	assignkeys(c->realkeyboard);
 }
 
 uint16_t Fetch(struct Chip8 * c, struct opcode * o){
@@ -223,9 +225,16 @@ void ShiftL(uint8_t * a,uint8_t b, uint8_t * carry){
 	*a = b << 1;
 	*carry = car;
 }
+void checkifkeypressed(uint8_t key, struct Chip8 * c){
+	if (c->keypressed == key)
+	c->pc = c->pc + 2;
+}
+
 uint16_t Decode(struct Chip8 * c, struct opcode o){
 	switch(o.op1)
 	{
+		case 0xE: checkifkeypressed(c->registers[o.op2], c);
+			break;
 		case 0: 
 		switch(o.op4)
 		{
@@ -302,7 +311,7 @@ uint16_t Decode(struct Chip8 * c, struct opcode o){
         }
 		break;
  }
-	printf("op1 is %x\n op2 is %x\n", o.com1, o.com2);
+	//printf("op1 is %x\n op2 is %x\n", o.com1, o.com2);
 	return o.op1;
 }
 

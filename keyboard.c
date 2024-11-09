@@ -5,7 +5,7 @@ void cleankeyboard(bool *keyboard){
     for (int i=0;i<16;i++)
         keyboard[i] = false;
 }
-void assignkeys(int *realkeyboard){
+void assignkeys(char *realkeyboard){
 realkeyboard[0] = '1';
 realkeyboard[1] = '2';
 realkeyboard[2] = '3';
