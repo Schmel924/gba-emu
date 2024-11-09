@@ -28,7 +28,9 @@ const uint8_t font[80]=
 void resetdisplay(struct Chip8 * c){
 	for (int i = 0; i<windowsizeX; i++) 
 	for (int j = 0; j<windowsizeY; j++)
-			c->display[i][j] = false;
+		{			c->display[i][j] = false;
+			c->Notdisplay[i][j] = false;
+		}
 }
 
 void resetmem(struct Chip8 * c){
@@ -53,6 +55,15 @@ uint16_t resetchip(struct Chip8 * c){
 	return c->pc;
 	cleankeyboard(c->keyboard);
 	assignkeys(c->realkeyboard);
+	c->drawopcode = false;
+}
+
+void updategraphics(struct Chip8 * c){
+	for (int i = 0; i<windowsizeX; i++) {
+	for (int j = 0;j<windowsizeY; j++) {
+	c->Notdisplay[i][j]=c->display[i][j]; 
+	}
+	}
 }
 
 uint16_t Fetch(struct Chip8 * c, struct opcode * o){
@@ -117,6 +128,7 @@ void draw(int rx, int ry, int amount, struct Chip8 * c){
 		}
 
 	}
+	c->drawopcode = true;
 }
 
 void condjump(uint8_t a, uint8_t b, bool condition, struct Chip8 * c)

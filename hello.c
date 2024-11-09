@@ -69,17 +69,23 @@ int main (int argc, char * * argv){
 		if (in != 0) input = in;
 		chip.keypressed = inputDecode(input);
 		Fetch(&chip, &op);
+		BeginDrawing();
 		drawDebug(&chip, &op);
+		//waitforok();
 		Decode(&chip, op);
-	BeginDrawing();
 	ClearBackground(RAYWHITE);
-	int delta = 10;
+	//int delta = 10;
+	if(chip.drawopcode){
+			updategraphics(&chip); 
+		}
+		{
 	for (int i = 0; i< windowsizeX; i++)
 		for (int j = 0; j< windowsizeY; j++)
 		{
-			if(chip.display[i][j])
+			if(chip.Notdisplay[i][j])
 			DrawRectangle(scale*i, scale*j, scale, scale, BLACK); 
 		}  
+		}
 	EndDrawing(); }
 	CloseWindow();
 	return 0;

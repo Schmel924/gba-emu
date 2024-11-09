@@ -17,6 +17,8 @@ struct Chip8{
 	bool keyboard[16];
 	char realkeyboard[16];
 	uint8_t keypressed;
+	bool drawopcode;
+	bool Notdisplay[windowsizeX][windowsizeY];
 };
 
 
@@ -30,7 +32,7 @@ struct opcode{
 	unsigned long NNN;
 };
 
-
+void updategraphics(struct Chip8 *);
 void memtest(struct Chip8 * );
 
 uint16_t resetchip(struct Chip8 * c);
