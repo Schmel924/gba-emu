@@ -5,22 +5,22 @@
 #include "chip.h"
 uint8_t inputDecode(char i){
 	switch (i) {
-	case '1': return 1;
-	case '2': return 2;
-	case '3': return 3;
-	case '4': return 12;
-	case 'q': return 4;
-	case 'w': return 5;
-	case 'e': return 6;
-	case 'r': return 13;
-	case 'a': return 7;
-	case 's': return 8;
-	case 'd': return 9;
-	case 'f': return 14;
-	case 'z': return 10;
-	case 'x': return 0;
-	case 'c': return 11;
-	case 'v': return 15;
+		case '1': return 1;
+		case '2': return 2;
+		case '3': return 3;
+		case '4': return 12;
+		case 'q': return 4;
+		case 'w': return 5;
+		case 'e': return 6;
+		case 'r': return 13;
+		case 'a': return 7;
+		case 's': return 8;
+		case 'd': return 9;
+		case 'f': return 14;
+		case 'z': return 10;
+		case 'x': return 0;
+		case 'c': return 11;
+		case 'v': return 15;
 	}
 	return -1;
 }
@@ -49,11 +49,11 @@ int main (int argc, char * * argv){
 	FILE *f = NULL;
 	if (i==0x200) printf("reset OK");
 	if (argc == 1){
-	f = fopen("chip8-test-suite/bin/3-corax+.ch8", "r");
-	if (f == NULL) printf("Eroor in reading file");}
+		f = fopen("chip8-test-suite/bin/3-corax+.ch8", "r");
+		if (f == NULL) printf("Eroor in reading file");}
 	else{
-	f = fopen(argv[1], "r");
-	if (f == NULL) printf("Eroor in reading file");}
+		f = fopen(argv[1], "r");
+		if (f == NULL) printf("Eroor in reading file");}
 	uint8_t a = 0;
 	while(fread( &a, sizeof(a), 1, f) == 1 && i<3500){
 		//printf("%x wrote in %d place\n",a,i);
@@ -74,10 +74,10 @@ int main (int argc, char * * argv){
 		Fetch(&chip, &op);
 		//waitforok();
 		Decode(&chip, op);
-	//int delta = 10;
-	move(row,1);
-	row = row +1;
-	if(chip.drawopcode){
+		//int delta = 10;
+		move(row,1);
+		row = row +1;
+		if(chip.drawopcode){
 			//updategraphics(&chip); 
 			refresh();
 			attron(A_BOLD);
@@ -88,7 +88,7 @@ int main (int argc, char * * argv){
 			}
 		}
 
-	input = -1;
+		input = -1;
 	}
 
 	return 0;
