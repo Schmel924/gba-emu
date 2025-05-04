@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-#include "raylib.h"
+//#include "raylib.h"
+#include <curses.h>
 #include "chip.h"
 uint8_t inputDecode(char i){
 	switch (i) {
@@ -23,7 +24,7 @@ uint8_t inputDecode(char i){
 	}
 	return -1;
 }
-
+/*
 void drawDebug(struct Chip8 * c, struct opcode * op){
 	DrawText(TextFormat("opcode is _%u", op->op1), 10*windowsizeX, 0, 1, BLACK);
 
@@ -38,7 +39,7 @@ void DrawChipxel(int i,int j,int delta,Color color)
 {
 	DrawPixel(delta+i,delta+j,color);
 }
-
+*/
 int main (int argc, char * * argv){
 	struct Chip8 chip;
 	uint16_t i;
@@ -62,35 +63,33 @@ int main (int argc, char * * argv){
 	chip.mem[0x1ff] = 3; //auto keyboard tester
 	const int screenWidth = scale*windowsizeX+100;
 	const int screenHeight = scale*windowsizeY;
-	InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
-	SetTargetFPS(30);
+	initscr();
+	int row =1;
+	refresh();
 	char input = -1;
-	while (!WindowShouldClose())    // Detect window close button or ESC key
+	while (true)    // Detect window close button or ESC key
 	{
-		char in = GetCharPressed();
+		char in =0;
 		if (in != 0) input = in;
-		chip.keypressed = inputDecode(input);
 		Fetch(&chip, &op);
-		BeginDrawing();
-		drawDebug(&chip, &op);
 		//waitforok();
 		Decode(&chip, op);
-	ClearBackground(RAYWHITE);
 	//int delta = 10;
+	move(row,1);
+	row = row +1;
 	if(chip.drawopcode){
-			updategraphics(&chip); 
+			//updategraphics(&chip); 
+			refresh();
+			attron(A_BOLD);
+			for (int i = 0; i<windowsizeY; i++) {
+				for (int j = 0; j<windowsizeX; j++) {
+					if (chip.display[j][i] == true) mvaddch(i,j,ACS_BLOCK);
+				}
+			}
 		}
-		{
-	for (int i = 0; i< windowsizeX; i++)
-		for (int j = 0; j< windowsizeY; j++)
-		{
-			if(chip.Notdisplay[i][j])
-			DrawRectangle(scale*i, scale*j, scale, scale, BLACK); 
-		}  
-		}
-	EndDrawing(); 
+
 	input = -1;
 	}
-	CloseWindow();
+
 	return 0;
 }
